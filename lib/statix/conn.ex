@@ -1,18 +1,26 @@
 defmodule Statix.Conn do
   @moduledoc false
 
-  defstruct [:sock, :header]
+  defstruct [:sock, :header, :addr, :port, :mode]
 
   alias Statix.Packet
 
-  def new(host, port) when is_binary(host) do
-    new(string_to_charlist(host), port)
+  def new(host, port, opts \\ [])
+
+  def new(host, port, opts) when is_binary(host) do
+    new(string_to_charlist(host), port, opts)
   end
 
-  def new(host, port) when is_list(host) or is_tuple(host) do
+  def new(host, port, opts) when is_list(host) or is_tuple(host) do
     {:ok, addr} = :inet.getaddr(host, :inet)
+    mode = Keyword.get(opts, :mode, :udp)
     header = Packet.header(addr, port)
-    %__MODULE__{header: header}
+    %__MODULE__{header: header, addr: addr, port: port, mode: mode}
+  end
+
+  def open(%__MODULE__{mode: :tcp, addr: addr, port: port} = conn) do
+    {:ok, sock} = :gen_tcp.connect(addr, port, [:binary, {:active, false}])
+    %__MODULE__{conn | sock: sock}
   end
 
   def open(%__MODULE__{} = conn) do

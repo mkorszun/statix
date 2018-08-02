@@ -319,8 +319,8 @@ defmodule Statix do
 
   @doc false
   def new_conn(module) do
-    {host, port, prefix} = load_config(module)
-    conn = Conn.new(host, port)
+    {host, port, prefix, mode} = load_config(module)
+    conn = Conn.new(host, port, [mode: mode])
     header = IO.iodata_to_binary([conn.header | prefix])
     %{conn | header: header, sock: module}
   end
@@ -352,8 +352,9 @@ defmodule Statix do
 
     host = Keyword.get(env, :host, "127.0.0.1")
     port = Keyword.get(env, :port, 8125)
+    mode = Keyword.get(env, :mode, :udp)
     prefix = build_prefix(prefix1, prefix2)
-    {host, port, prefix}
+    {host, port, prefix, mode}
   end
 
   defp build_prefix(part1, part2) do
