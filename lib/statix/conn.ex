@@ -28,15 +28,15 @@ defmodule Statix.Conn do
     %__MODULE__{conn | sock: sock}
   end
 
-  def transmit(%__MODULE__{mode: :udp} = conn, type, key, val, options)
-      when is_binary(val) and is_list(options) do
-    Packet.build(conn.header, type, key, val, options)
-    |> transmit(conn.sock)
-  end
-
   def transmit(%__MODULE__{mode: :tcp} = conn, type, key, val, options)
       when is_binary(val) and is_list(options) do
     Packet.build([], type, key, val, options)
+    |> transmit(conn.sock)
+  end
+
+  def transmit(%__MODULE__{} = conn, type, key, val, options)
+      when is_binary(val) and is_list(options) do
+    Packet.build(conn.header, type, key, val, options)
     |> transmit(conn.sock)
   end
 
